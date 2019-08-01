@@ -1,16 +1,34 @@
 <script>
     import TodoItem from './TodoItem.svelte';
     let name = 'Todo list';
+    let todoItems = [];
 
-    let todoItems = [
-        { title: 'Wash the car', done: true },
-        { title: 'Feed the dog', done: false },
-        { title: 'Pick up the kids', done: false },
-        { title: 'Beat high score', done: false },
-        { title: 'Beat new high score', done: false },
-    ]
+    let nextId = todoItems.length + 1;
 
+    // let nextId = 2;
     let allItems = [];
+    let newTodoTitle = '';
+
+    function addTodo(e) {
+        if (e.key === 'Enter' && e.target.value) {
+            todoItems = [{
+                id: nextId,
+                title: e.target.value,
+                done: false
+            }, ...todoItems]
+
+            nextId = nextId + 1
+            newTodoTitle = ''
+        }
+    }
+
+    function handleDeleteTodo(event) {
+        todoItems = todoItems.filter(todoItem => todoItem.id !== event.detail.id);
+    }
+
+    function deleteAllTodos() {
+        todoItems = []
+    }
 
 </script>
 
@@ -21,46 +39,24 @@
         padding: 0;
         border-top: solid 5px #333;
     }
-
-    .todo-list__item {
-        border-bottom: solid 1px #aaa;
-    }
-
-    .todo-list__label {
-        padding: 1rem;
-        width: 100%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-    }
-
-    @media (min-width: 768px) {
-        .todo-list__label {
-            padding: 1.5rem;
-        }
-    }
-
-    .isDone {
-        background: lightgreen;
-        text-decoration: line-through;
-    }
-
     input {
-        margin: 0 1rem 0 0;
+        border: solid 5px #ddd;
+        width: 100%;
     }
 </style>
 
+<input type="text" placeholder="Add todo" bind:value={newTodoTitle} on:keydown={addTodo}/>
 <ul class="todo-list">
     {#each todoItems as item, index }
-        <li class="todo-list__item" class:isDone={item.done}>
-            <label class="todo-list__label" for="{index}">
-                <input id="{index}" value={item.title} type="checkbox" bind:group={allItems} bind:checked={item.done} />
-                {item.title}
-            </label>
-        </li>
+        <TodoItem {...item} on:deleteTodo={handleDeleteTodo} />
     {/each}
 </ul>
+<br>
 
-{#if allItems.length === todoItems.length }
-    <p>All items complete!</p>
-{/if }
+{#if todoItems.length}
+    <button on:click={deleteAllTodos}>Delete all</button>
+{/if}
+
+{#if !todoItems.length}
+    <p>No todos - add one!</p>
+{/if}
